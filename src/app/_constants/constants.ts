@@ -110,6 +110,6 @@ export const EMOJI_POOL = [
     "💜",
     "🤎",
     "🖤",
+    "❤️‍🔥",
 ]
-  
-  
+
