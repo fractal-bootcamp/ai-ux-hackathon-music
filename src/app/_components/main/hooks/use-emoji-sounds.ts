@@ -4,6 +4,7 @@ import { api } from "~/trpc/react";
 
 export function useEmojiSounds() {
 	const [selectedEmojis, setSelectedEmojis] = useState<string[]>([]);
+	const [progress, setProgress] = useState<number>(0);
 	const { data: discoveredSounds = [] } = api.schema.getSounds.useQuery();
 
 	const createEmojiRequest = api.emoji.create.useMutation();
@@ -33,18 +34,18 @@ export function useEmojiSounds() {
 		if (selectedEmojis.length === 0) return;
 		
 		try {
-			// Create the emoji request. 
+			setProgress(0);
+			// Create the emoji request
 			const result = await createEmojiRequest.mutateAsync({
 				emojiString: selectedEmojis.join(" "),
 			});
+			setProgress(25);
 
 			if (!result) {
 				throw new Error("Failed to create emoji request");
 			}
 
-			// Progressively update the UI to show the emoji request.
-
-			// Perform the GPT request.
+			// Perform the GPT request
 			const gptResponse = await fetch("/api/generate", {
 				method: "POST",
 				body: JSON.stringify({
@@ -52,6 +53,7 @@ export function useEmojiSounds() {
 					emojiRequestId: result.id,
 				}),
 			});
+			setProgress(50);
 
 			if (!gptResponse.ok) {
 				throw new Error("Failed to generate text from emojis");
@@ -59,11 +61,12 @@ export function useEmojiSounds() {
 
 			const gptResponseData = await gptResponse.json();
 
-			// Create the text conversion.
+			// Create the text conversion
 			const textResult = await createTextConversion.mutateAsync({
 				emojiRequestId: result.id,
 				text: gptResponseData.response,
 			});
+			setProgress(75);
 
 			if (!textResult) {
 				throw new Error("Failed to create text conversion");
@@ -83,18 +86,23 @@ export function useEmojiSounds() {
 
 			const falResponseData = await falResponse.json();
 
-			// Update the audio generation with the falresponse.audio.data
+			// Update the audio generation
 			const audioResult = await createAudioGeneration.mutateAsync({
 				textConversionId: textResult.id,
 				audioFileUrl: falResponseData.data.audio.url,
 			});
+			setProgress(100);
 
 			if (!audioResult) {
 				throw new Error("Failed to create audio generation");
 			}
 
+			// Reset progress after a delay
+			setTimeout(() => setProgress(0), 1000);
+
 		} catch (error) {
 			console.error("Error creating audio generation:", error);
+			setProgress(0);
 		}
 	}, [selectedEmojis, createEmojiRequest, createTextConversion, createAudioGeneration]);
 
@@ -117,5 +125,6 @@ export function useEmojiSounds() {
 		handleClearAll,
 		handlePlaySound,
 		handleGPTSubmit,
+		progress,
 	};
 } 
