@@ -1,5 +1,5 @@
 import { createTRPCRouter, publicProcedure } from "../trpc";
-import { eq, isNotNull, desc } from "drizzle-orm";
+import { eq, isNotNull, desc, asc } from "drizzle-orm";
 import { emojiRequests, textConversions, audioGeneration } from "~/server/db/schema";
 
 export const schemaRouter = createTRPCRouter({
@@ -46,7 +46,7 @@ export const schemaRouter = createTRPCRouter({
         .where(
           isNotNull(audioGeneration.audioFileUrl)
         )
-        .orderBy(audioGeneration.createdAt, desc(audioGeneration.createdAt))
+        .orderBy(audioGeneration.createdAt, asc(audioGeneration.createdAt))
         .limit(1);
 
       return latestSound[0];
