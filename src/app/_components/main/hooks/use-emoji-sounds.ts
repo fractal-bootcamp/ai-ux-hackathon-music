@@ -14,6 +14,7 @@ export function useEmojiSounds() {
 
 	const createEmojiRequest = api.emoji.create.useMutation();
 	const createTextConversion = api.text.create.useMutation();
+	const createAudioGeneration = api.audio.createAudioGeneration.useMutation();
 
 	const handleEmojiClick = useCallback((emoji: string) => {
 		setSelectedEmojis((prev) => [...prev, emoji]);
@@ -77,13 +78,34 @@ export function useEmojiSounds() {
 				throw new Error("Failed to create text conversion");
 			}
 			
-			
-			
+			// Send to Fal AI 
+			const falResponse = await fetch("/api/fal", {
+				method: "POST",
+				body: JSON.stringify({
+					prompt: gptResponseData.response,
+				}),
+			});
+
+			if (!falResponse.ok) {
+				throw new Error("Failed to generate audio from text");
+			}
+
+			const falResponseData = await falResponse.json();
+
+			// Update the audio generation with the falresponse.audio.data
+			const audioResult = await createAudioGeneration.mutateAsync({
+				textConversionId: textResult.id,
+				audioFileUrl: falResponseData.data.audio.url,
+			});
+
+			if (!audioResult) {
+				throw new Error("Failed to create audio generation");
+			}
 
 		} catch (error) {
-			console.error("Error creating emoji request:", error);
+			console.error("Error creating audio generation:", error);
 		}
-	}, [selectedEmojis, createEmojiRequest, createTextConversion]);
+	}, [selectedEmojis, createEmojiRequest, createTextConversion, createAudioGeneration]);
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
