@@ -2,25 +2,16 @@ import { useState, useCallback, useEffect } from "react";
 import type { Sound } from "~/app/_types/types";
 import { api } from "~/trpc/react";
 
-const INITIAL_SOUNDS: Sound[] = [
-	{ emoji: "🎸", name: "Guitar Strum" },
-	{ emoji: "🎹", name: "Piano Melody" },
-	{ emoji: "🎺", name: "Trumpet Blast" },
-];
-
 export function useEmojiSounds() {
 	const [selectedEmojis, setSelectedEmojis] = useState<string[]>([]);
-	const [discoveredSounds, setDiscoveredSounds] = useState<Sound[]>(INITIAL_SOUNDS);
+	const { data: discoveredSounds = [] } = api.schema.getSounds.useQuery();
 
 	const createEmojiRequest = api.emoji.create.useMutation();
 	const createTextConversion = api.text.create.useMutation();
+	const createAudioGeneration = api.audio.createAudioGeneration.useMutation();
 
 	const handleEmojiClick = useCallback((emoji: string) => {
 		setSelectedEmojis((prev) => [...prev, emoji]);
-		setDiscoveredSounds((prev) => {
-			if (prev.find((sound) => sound.emoji === emoji)) return prev;
-			return [...prev, { emoji, name: `Sound ${prev.length + 1}` }];
-		});
 	}, []);
 
 	const handleBackspace = useCallback(() => {
@@ -32,9 +23,10 @@ export function useEmojiSounds() {
 	}, []);
 
 	const handlePlaySound = useCallback((sound: Sound) => {
-		// Implement sound playback logic
-		console.log(`Playing sound: ${sound.name}`);
-
+		if (sound.audioUrl) {
+			const audio = new Audio(sound.audioUrl);
+			audio.play().catch(console.error);
+		}
 	}, []);
 
 	const handleGPTSubmit = useCallback(async () => {
@@ -77,13 +69,34 @@ export function useEmojiSounds() {
 				throw new Error("Failed to create text conversion");
 			}
 			
-			
-			
+			// Send to Fal AI 
+			const falResponse = await fetch("/api/fal", {
+				method: "POST",
+				body: JSON.stringify({
+					prompt: gptResponseData.response,
+				}),
+			});
+
+			if (!falResponse.ok) {
+				throw new Error("Failed to generate audio from text");
+			}
+
+			const falResponseData = await falResponse.json();
+
+			// Update the audio generation with the falresponse.audio.data
+			const audioResult = await createAudioGeneration.mutateAsync({
+				textConversionId: textResult.id,
+				audioFileUrl: falResponseData.data.audio.url,
+			});
+
+			if (!audioResult) {
+				throw new Error("Failed to create audio generation");
+			}
 
 		} catch (error) {
-			console.error("Error creating emoji request:", error);
+			console.error("Error creating audio generation:", error);
 		}
-	}, [selectedEmojis, createEmojiRequest, createTextConversion]);
+	}, [selectedEmojis, createEmojiRequest, createTextConversion, createAudioGeneration]);
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
