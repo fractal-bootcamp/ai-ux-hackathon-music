@@ -47,9 +47,15 @@ export function EmojiSelector({
 
 	useEffect(() => {
 		const handleKeyPress = (event: KeyboardEvent) => {
-			if (event.key === "Tab") {
+			if (event.key === "Tab" || event.key === "ArrowRight") {
 				event.preventDefault();
 				handlePageChange("next");
+				return;
+			}
+
+			if (event.key === "ArrowLeft") {
+				event.preventDefault();
+				handlePageChange("back");
 				return;
 			}
 
@@ -77,7 +83,7 @@ export function EmojiSelector({
 						key={`row-${
 							// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 							i
-						}`}
+							}`}
 						className="flex justify-center gap-1"
 					>
 						{row.map((key) => (
