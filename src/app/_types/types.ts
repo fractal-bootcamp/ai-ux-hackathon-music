@@ -1,6 +1,6 @@
 export interface Sound {
-    emoji: string
-    name: string
-  }
+	audioUrl: string | null;
+	emoji: string;
+}
   
   

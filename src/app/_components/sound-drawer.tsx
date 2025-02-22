@@ -34,17 +34,17 @@ export function SoundDrawer({ sounds, onPlaySound }: SoundDrawerProps) {
 						<div className="space-y-2">
 							{sounds.map((sound) => (
 								<div
-									key={sound.name}
+									key={sound.emoji}
 									className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted"
 								>
 									<div className="flex items-center gap-4">
 										<div className="text-3xl">{sound.emoji}</div>
-										<div className="font-medium">{sound.name}</div>
 									</div>
 									<Button
 										variant="ghost"
 										size="icon"
-										onClick={() => onPlaySound?.(sound)}
+										onClick={() => sound.audioUrl && onPlaySound?.(sound)}
+										disabled={!sound.audioUrl}
 									>
 										<Music2 className="h-4 w-4" />
 									</Button>

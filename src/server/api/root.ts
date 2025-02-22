@@ -2,6 +2,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { emojiRouter } from "~/server/api/routers/emoji";
 import { GPTTextRouter } from "~/server/api/routers/text";
 import { audioRouter } from "~/server/api/routers/audio";
+import { schemaRouter } from "~/server/api/routers/schema";
 /**
  * This is the primary router for your server.
  *
@@ -11,6 +12,7 @@ export const appRouter = createTRPCRouter({
   emoji: emojiRouter,
   text: GPTTextRouter,
   audio: audioRouter,
+  schema: schemaRouter,
 });
 
 // export type definition of API
