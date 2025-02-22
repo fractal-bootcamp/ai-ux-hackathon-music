@@ -7,8 +7,9 @@ import { Button } from "~/components/ui/button";
 import { ArrowRight, Delete } from "lucide-react";
 import { SoundDrawer } from "~/app/_components/sound-drawer";
 import { EmojiSelector } from "~/app/_components/emoji-selector-keyboard";
-import { SoundVisualizer } from "~/app/_components/sound-visualizer";
+import AudioVisualizer from "~/app/_components/sound-visualizer";
 import type { Sound } from "~/app/_types/types";
+const sampleAudioUrl = '/sample-15s.mp3';
 
 export default function EmojiAudioGame() {
 	const [selectedEmojis, setSelectedEmojis] = useState<string[]>([]);
@@ -81,7 +82,7 @@ export default function EmojiAudioGame() {
 					/>
 				</div>
 
-				<SoundVisualizer />
+				<AudioVisualizer audioUrl={sampleAudioUrl} />
 
 				<EmojiSelector onEmojiSelect={handleEmojiClick} />
 			</Card>
