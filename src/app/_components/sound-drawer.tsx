@@ -32,9 +32,9 @@ export function SoundDrawer({ sounds, onPlaySound }: SoundDrawerProps) {
 				<div className="mt-4">
 					<ScrollArea className="h-[calc(100vh-12rem)]">
 						<div className="space-y-2">
-							{sounds.map((sound, i) => (
+							{sounds.map((sound) => (
 								<div
-									key={i}
+									key={sound.name}
 									className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted"
 								>
 									<div className="flex items-center gap-4">
